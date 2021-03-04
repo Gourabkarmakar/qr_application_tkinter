@@ -1,4 +1,11 @@
 from tkinter import *
+import qrcode
+from PIL import Image, ImageTk
+from resizeimage import resizeimage
+
+# from qrcode.image.pil import PilImage
+# import Image
+# import json
 
 primary_color = "#053246"
 
@@ -66,11 +73,16 @@ class Qrgernerator:
                           command=self.generate)
         btn_save.place(x=25, y=270, width=90, height=40)
 
-        btn_clear = Button(emp_frame, text="Clear", bg="#497e1e", fg="white", font=("times new roman", 15, 'bold'))
+        btn_clear = Button(emp_frame, text="Clear", bg="#497e1e", fg="white", font=("times new roman", 15, 'bold'),
+                           command=self.clear)
         btn_clear.place(x=125, y=270, width=90, height=40)
 
-        btn_edit = Button(emp_frame, text="Edit", bg="#497e1e", fg="white", font=("times new roman", 15, 'bold'))
-        btn_edit.place(x=225, y=270, width=90, height=40)
+        btn_exit = Button(emp_frame, text="Exit", bg="#497e1e", fg="white", font=("times new roman", 15, 'bold'), command=exit)
+        btn_exit.place(x=225, y=270, width=90, height=40)
+
+        self.msg = ''
+        self.label_massage = Label(emp_frame, text=self.msg, font=("times new roman", 20), bg='white', fg='green')
+        self.label_massage.place(x=0, y=310, relwidth=1)
 
         # =========== show qr =========
 
@@ -84,11 +96,46 @@ class Qrgernerator:
         self.qr_frame.place(x=60, y=100, width=180, height=180)
 
     def generate(self):
-        if self.var_emp_code.get() == '' or self.var_emp_fname.get() == "" or self.var_emp_lname.get() == "" or self.var_emp_ano.get() or self.var_emp_mno.get() == "":
-            # self.label_massage.config = ""
-            pass
+        if self.var_emp_code.get() == '' or self.var_emp_fname.get() == "" or self.var_emp_lname.get() == "" or self.var_emp_ano.get() == "" or self.var_emp_mno.get() == "":
+            self.msg = "All Fields required"
+            self.label_massage.config(text=self.msg, fg='red')
+
+            # For Debug
+            # print("All Fields required")
         else:
-            print()
+
+            qr_data = (
+                f" member id: {self.var_emp_code.get()}\nfirstname:{self.var_emp_fname.get()}\nlastname:{self.var_emp_lname.get()}\nmobile_no:{self.var_emp_mno.get()}\naadher_no:{self.var_emp_ano.get()}"
+            )
+            qr_code = qrcode.make(qr_data)
+
+            qr_code = resizeimage.resize_cover(qr_code, [180, 180])
+
+            image_name = qr_code.save(f"./member_qr/emp_{self.var_emp_ano.get()}.png")
+            print(image_name)
+
+            # print(qr_code)
+            self.im = ImageTk.PhotoImage(qr_code)
+            self.qr_frame.config(image=self.im)
+
+            # print(qr_code)
+
+            print(qr_data)
+            # for debug
+            # print("got data")
+
+            self.msg = "qr Generate Successfully"
+            self.label_massage.config(text=self.msg, fg='green')
+
+    def clear(self):
+        self.var_emp_code.set('')
+        self.var_emp_fname.set('')
+        self.var_emp_lname.set('')
+        self.var_emp_ano.set('')
+        self.var_emp_mno.set('')
+        self.msg = ""
+        self.label_massage.config(text=self.msg)
+        self.qr_frame.config(image='')
 
 
 root = Tk()
